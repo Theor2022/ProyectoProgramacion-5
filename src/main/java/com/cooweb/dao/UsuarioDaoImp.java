@@ -49,29 +49,36 @@ public class UsuarioDaoImp implements UsuarioDao {
 
 	@Override
 	public boolean verificarCredenciales(Usuario usuario) {
-	    // Buscar al usuario solo por email
-	    String query = "FROM Usuario u WHERE u.email = :email";
-	    
-	    List<Usuario> lista = entityManager.createQuery(query)
-	            .setParameter("email", usuario.getEmail())
-	            .getResultList();
-	    
-	    // Si el usuario no existe, retornar falso
-	    if (lista.isEmpty()) {
-	        return false;
-	    }
-	    
-	    // Recuperar el hash de la contraseña almacenada
-	    String passHasheada = lista.get(0).getPassword();
-	    
-	    // Crear la instancia de Argon2
-	    Argon2 argon2 = Argon2Factory.create(Argon2Factory.Argon2Types.ARGON2i);
-	    
-	    // Verificar la contraseña ingresada con el hash almacenado
-	    boolean passEsIgual = argon2.verify(passHasheada, usuario.getPassword());
-	    
-	    // Retornar true si la contraseña es correcta, false si es incorrecta
-	    return passEsIgual;
+		String query = "FROM Usuario u WHERE u.email = :email";
+
+		List<Usuario> lista = entityManager.createQuery(query, Usuario.class)
+				.setParameter("email", usuario.getEmail())
+				.getResultList();
+
+		if (lista.isEmpty()) {
+			return false; // Usuario no encontrado
+		}
+
+		Usuario usuarioDB = lista.get(0); // Obtiene el usuario encontrado
+		String passHasheada = usuarioDB.getPassword();
+
+		Argon2 argon2 = Argon2Factory.create(Argon2Factory.Argon2Types.ARGON2i);
+
+		// Mensaje en consola para depuración sin mostrar la contraseña real
+		System.out.println("Contraseña almacenada (HASH): " + passHasheada);
+		System.out.println("Verificando credenciales para el usuario: " + usuario.getEmail());
+
+		// Compara la contraseña ingresada con el hash en la BD
+		boolean esValida = argon2.verify(passHasheada, usuario.getPassword());
+
+		if (esValida) {
+			System.out.println("✅ Contraseña válida");
+		} else {
+			System.out.println("❌ Contraseña incorrecta");
+		}
+
+		return esValida;
 	}
+
 
 }

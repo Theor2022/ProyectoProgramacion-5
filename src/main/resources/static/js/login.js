@@ -1,13 +1,8 @@
-$(document).ready(function() {
-
-});
-
 async function iniciarSesion() {
-  let datos = {};
-
-  // Corregido: Asignación correcta
-  datos.email = document.getElementById('txtEmail').value;
-  datos.password = document.getElementById('txtPassword').value;
+  let datos = {
+    email: document.getElementById('txtEmail').value,
+    password: document.getElementById('txtPassword').value
+  };
 
   const request = await fetch('api/login', {
     method: 'POST',
@@ -18,16 +13,16 @@ async function iniciarSesion() {
     body: JSON.stringify(datos)
   });
 
-  const respuesta = await request.text();
-  
-  if (respuesta =='OK'){
-	window.location.href='usuarios.html';
+  if (!request.ok) {
+    alert("Las credenciales son incorrectas");
+    return;
   }
+
+  const respuesta = await request.json(); // Recibirá un objeto con el token
+
+  // Guardar el token en localStorage
+  localStorage.setItem("token", respuesta.token);
   
-  else{
-	alert("Las credenciales son incorrectas");
-  }
-  
-  // Maneja la respuesta de la API aquí
-  console.log(respuesta);
+  // Redireccionar al usuario a la página de usuarios
+  window.location.href = 'usuarios.html';
 }

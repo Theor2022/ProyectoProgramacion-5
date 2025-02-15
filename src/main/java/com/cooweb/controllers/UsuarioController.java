@@ -41,15 +41,18 @@ public class UsuarioController {
         usuarioDao.eliminar(id);
         return ResponseEntity.ok().build();  // Devuelve 200 OK después de eliminar
     }
-    
-    @PostMapping  
+
+    @PostMapping
     public Object registrarUsuario(@RequestBody Usuario usuario) {
-    	
-    	Argon2 argon2=Argon2Factory.create(Argon2Factory.Argon2Types.ARGON2i);
-    	String hash=argon2.hash(1, 1024, 1, usuario.getPassword());
-    	usuario.setPassword(hash);
+        if (usuario.getPassword() == null || usuario.getPassword().isEmpty()) {
+            return ResponseEntity.badRequest().body("La contraseña no puede estar vacía");
+        }
+
+        Argon2 argon2 = Argon2Factory.create(Argon2Factory.Argon2Types.ARGON2i);
+        String hash = argon2.hash(2, 1024, 2, usuario.getPassword()); // Aumentar iteraciones para más seguridad
+        usuario.setPassword(hash);
+
         return usuarioDao.registrar(usuario);
-        
     }
         
     	
